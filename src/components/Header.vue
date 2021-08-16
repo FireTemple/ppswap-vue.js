@@ -428,7 +428,20 @@ export default {
     // buy ppswap
     buyppswap() {
       let amount = this.ppswBuyAmount;
-      this.$store.dispatch('buyPpswap', {amount: amount});
+
+      // start loading
+      const loading = this.$loading({
+        lock: true,
+        text: 'Please wait',
+        spinner: 'el-icon-loading',
+        background: 'rgba(0, 0, 0, 0.7)'
+      });
+      this.$store.dispatch('buyPpswap', {amount: amount}).then(res => {
+        loading.close();
+        console.log(res);
+        this.$message.success('OK');
+        this.ppswapBuyWindowVisible = false;
+      });
     },
 
     //sell ppswap

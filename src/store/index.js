@@ -127,8 +127,10 @@ export default createStore({
 
         // create an offer
         async makeOffer(context, payload) {
+
             let fromIndex = payload.fromIndex;
             let fromTokenContractInstance;
+
             if (fromIndex === 2) {
                 fromTokenContractInstance = this.state.WEENUSInstance;
             } else if (fromIndex === 3) {
@@ -141,17 +143,17 @@ export default createStore({
             // before approve allowance, we need to check the current allowance for other offers
             let currentAllowance = await checkAllowance(fromIndex, localStorage.getItem('account'), this.state);
             // convert  token
-            let tokenA = this.state.web3.utils.toWei(dealWithDecimals(payload.amtA, 18).toString(), 'ether')
-            console.log(typeof tokenA)
-            let bnTokenA = this.state.web3.utils.toBN((BigInt(tokenA) + BigInt(currentAllowance)).toString());
+            let tokenA = this.state.web3.utils.toWei(payload.amtA.toString(), 'ether')
+            let bnTokenAForProve = this.state.web3.utils.toBN((BigInt(tokenA) + BigInt(currentAllowance)).toString());
+            let bnTokenA = this.state.web3.utils.toBN(tokenA);
 
-            let tokenB = this.state.web3.utils.toWei(dealWithDecimals(payload.amtB, 18).toString(), 'ether')
+            let tokenB = this.state.web3.utils.toWei(payload.amtB.toString(), 'ether')
             let bnTokenB = this.state.web3.utils.toBN(tokenB);
 
             // update allowance
             await fromTokenContractInstance.methods.approve(
                 address,
-                bnTokenA,
+                bnTokenAForProve,
             ).send({
                 from: localStorage.getItem('account')
             })
@@ -161,7 +163,6 @@ export default createStore({
             // let newAllowance = currentAllowance;
             // newAllowance.amount += add;
             // await addOrUpdateAllowance(newAllowance);
-
 
             return await this.state.contractInstance.methods.makeOffer(
                 payload.fromTokenAddress,
@@ -193,7 +194,7 @@ export default createStore({
             }
 
             // convert  token
-            let tokenB = this.state.web3.utils.toWei(dealWithDecimals(payload.amtB, 18).toString(), 'ether')
+            let tokenB = this.state.web3.utils.toWei(payload.amtB.toString(), 'ether')
             let bnTokenB = this.state.web3.utils.toBN(tokenB);
 
 

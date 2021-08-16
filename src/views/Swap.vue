@@ -236,7 +236,7 @@ export default {
           })
           // add offer record to database
           requestPromise({
-            url: apiBaseUrl + '/api/offer',
+            url: apiBaseUrl + '/offer',
             method: 'post',
             data: {
               id: offerId,

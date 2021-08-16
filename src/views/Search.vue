@@ -215,7 +215,7 @@ export default {
         }
         // add data to the database
         requestPromise({
-          url: apiBaseUrl+'/api/offer',
+          url: apiBaseUrl+'/offer',
           method: 'put',
           data: {
             id: this.tableData[index].id,

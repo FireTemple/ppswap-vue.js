@@ -10,7 +10,7 @@ export const NETWORKS = {
 
 // This is the ip address of the back end apis
 export const apiBaseUrl = 'http://18.221.213.17:8000/api';
-// export const apiBaseUrl = 'http://localhost:8081/api';
+// export const apiBaseUrl = 'http://localhost:8000/api';
 
 
 // external website url
