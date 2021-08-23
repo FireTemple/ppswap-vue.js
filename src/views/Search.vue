@@ -65,11 +65,11 @@
               width="180">
           </el-table-column>
           <el-table-column
-              label="Amount of token A"
+              :label="fromTokenName"
               prop="amta" width="210">
           </el-table-column>
           <el-table-column
-              label="Amount of token B"
+              :label="toTokenName"
               prop="amtb" width="210">
           </el-table-column>
           <!--          <el-table-column-->
@@ -141,6 +141,8 @@ export default {
       toTokenInfo: {},
       fromIndex: 0,
       toIndex: 1,
+      fromTokenName: null,
+      toTokenName: null,
 
       tokenList: [],
       tableData: [],
@@ -152,6 +154,7 @@ export default {
       isOfferValid: true,
       resultAfterCheck: '',
 
+
     }
   },
   methods: {
@@ -161,20 +164,35 @@ export default {
       // the default token is eth
       this.fromTokenInfo = this.tokenList[0];
       this.toTokenInfo = this.tokenList[1];
+
+      this.fromTokenName = this.tokenList[0].token;
+      this.toTokenName = this.tokenList[1].token;
+      console.log(this.fromTokenName);
+      console.log(this.toTokenName);
     },
     // handle token selection
     selectFromToken(index) {
       this.fromTokenInfo = this.tokenList[index];
       this.fromIndex = index;
+      this.fromTokenName = this.tokenList[this.fromIndex].token;
+      this.updateTable();
+      console.log(this.fromTokenName);
     },
     selectToToken(index) {
       this.toTokenInfo = this.tokenList[index];
       this.toIndex = index;
+      this.toTokenName = this.tokenList[this.toIndex].token;
+    },
+
+    // force to update table
+    updateTable(){
+      this.$nextTick(() => {  // 更新表格布局
+        this.$refs.tableDataRef.doLayout();
+      });
     },
 
     // search result
     searchResult() {
-
       requestPromise({
         url: apiBaseUrl + '/offer/search',
         method: 'post',

@@ -36,20 +36,20 @@
                    @click="openSellPPS"
         >Sell PPS
         </el-button>
-<!--        <el-button type="primary"-->
-<!--                   class="btn-connect-wallet"-->
-<!--                   @click="isLogOut"-->
-<!--        >test-->
-<!--        </el-button>-->
-<!--        <el-button-->
-<!--            type="primary"-->
-<!--            icon="custom-icon el-icon-moon "-->
-<!--            class="header-btn"-->
-<!--            style="margin-right: 10px"-->
-<!--        ></el-button>-->
+        <!--        <el-button type="primary"-->
+        <!--                   class="btn-connect-wallet"-->
+        <!--                   @click="isLogOut"-->
+        <!--        >test-->
+        <!--        </el-button>-->
+        <!--        <el-button-->
+        <!--            type="primary"-->
+        <!--            icon="custom-icon el-icon-moon "-->
+        <!--            class="header-btn"-->
+        <!--            style="margin-right: 10px"-->
+        <!--        ></el-button>-->
 
         <div class="dropdown-more">
-          <el-dropdown  trigger="click" @command="handleCommand">
+          <el-dropdown trigger="click" @command="handleCommand">
                     <span class="el-dropdown-link">
                          <el-button type="primary"
                                     class="header-btn"
@@ -127,7 +127,6 @@
   <!-- ppswap buying window -->
   <div>
     <el-dialog
-        title="How many ether you would like to use for ppswap."
         v-model="ppswapBuyWindowVisible"
         width="35%"
         center>
@@ -135,7 +134,11 @@
         <!-- TODO add validation function -->
         <h4 class="title-buy-sell">From ETH</h4>
         <div class="right">
-          <el-input v-model="ppswBuyAmount" placeholder="ETH (current maximum is 0.5)" type="number"></el-input>
+          <el-input
+              v-model="ppswBuyAmount"
+              placeholder="ETH (current maximum is 0.5)"
+              type="number"
+          ></el-input>
         </div>
         <div>
           <p><span class="swap-rate">1 (ETH) = {{ ppswapBuyRate }} (PPS).</span>
@@ -162,7 +165,6 @@
   <!-- ppswap selling window -->
   <div>
     <el-dialog
-        title="How many ether you would like to use for ppswap."
         v-model="ppswapSellWindowVisible"
         width="35%"
         center>
@@ -170,7 +172,7 @@
         <!-- TODO add validation function -->
         <h4 class="title-buy-sell">From PPS</h4>
         <div class="right">
-          <el-input v-model="ppswapSellAmount" placeholder="PPS you will pay" type="number"></el-input>
+          <el-input v-model="ppswapSellAmount" placeholder="Amount of PPS for selling" type="number"></el-input>
         </div>
         <div>
           <p><span class="swap-rate">1 (ETH) = {{ ppswapBuyRate }} (PPS).</span>
@@ -242,6 +244,7 @@ import {updateStatus} from "@/network/api/offerAPI";
 import {selectAllActiveOffer} from "@/network/api/offerAPI";
 import {getNameByContractAddress} from "@/utils/commonUtils";
 import {ppswapUrl} from "@/utils/constants/network";
+import {checkBalance} from "@/utils/contractCommonMethods";
 
 export default {
   data() {
@@ -314,7 +317,6 @@ export default {
       let log = this.$store.dispatch('isLogOut');
     },
 
-
     handleCommand(command) {
       if (command == "loginout") {
         localStorage.removeItem("ms_username");
@@ -328,8 +330,8 @@ export default {
         }
         this.findAllActiveOffer();
         this.cancelTokenWinowVisible = true;
-      }else if (command === 'about'){
-        window.open( ppswapUrl )
+      } else if (command === 'about') {
+        window.open(ppswapUrl)
       }
     },
 
@@ -382,9 +384,6 @@ export default {
         console.log(error);
       });
     },
-    test(index) {
-
-    },
 
     cancelOffer(index) {
       // TODO current don't remove user's allowance
@@ -422,12 +421,21 @@ export default {
             })
           });
     },
-    openBuyWallet() {
-      this.ppswapBuyWindowVisible = true;
-    },
     // buy ppswap
-    buyppswap() {
+    async buyppswap() {
       let amount = this.ppswBuyAmount;
+      // check amount
+      if (amount < 0 || amount > 0.5) {
+        this.$message.error("The number should in the range of 0 - 0.5")
+        return;
+      }
+
+      // check if user already have too many PPS
+      let buyingAmount = this.ppswBuyAmount * this.ppswapBuyRate;
+      if(!await this.checkValidForBuy(buyingAmount)){
+        this.$message.error("Currently user only allow to hold less then 1B PPS, please check your PPS amount")
+        return;
+      }
 
       // start loading
       const loading = this.$loading({
@@ -436,18 +444,31 @@ export default {
         spinner: 'el-icon-loading',
         background: 'rgba(0, 0, 0, 0.7)'
       });
+      // call the buyppswap method of the contract
       this.$store.dispatch('buyPpswap', {amount: amount}).then(res => {
         loading.close();
         console.log(res);
         this.$message.success('OK');
         this.ppswapBuyWindowVisible = false;
+      }).catch(error => {
+        console.log(error)
+        loading.close();
+        this.$message.error('Error! see console');
       });
+    },
+
+    // check if user is valid to buy PPS
+    async checkValidForBuy(plusAmount) {
+      // 1. user should have less then 1B(1000000) PPS
+      let balance = await checkBalance(-1, localStorage.getItem('account'), this.$store.state);
+      // calculate real balance with decimal
+      balance = dealWithDecimals(balance, -18);
+      return balance + plusAmount <= Math.pow(10, 9);
     },
 
     //sell ppswap
     sellPPS() {
       let amount = this.ppswapSellAmount;
-
 
       // start loading
       const loading = this.$loading({

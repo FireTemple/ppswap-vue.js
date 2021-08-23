@@ -46,12 +46,24 @@ export async function checkAllowance(index, tokenOwner, state) {
  * @returns {Promise<*>}
  */
 export async function checkBalance(index, tokenOwner, state){
-    // 1. get instance first
-    let instance = getContractInstanceByIndex(index, state);
-    // 2. check blance
-    return await instance.methods.balanceOf(
-        tokenOwner,
-    ).call();
+
+
+    // if index = -1 means, check the PPS balance
+    // else is other token
+    if (index === -1){
+        return await state.contractInstance.methods.balanceOf(
+            tokenOwner,
+        ).call();
+    }else {
+        // 1. get instance first
+        let instance = getContractInstanceByIndex(index, state);
+        // 2. check blance
+        return await instance.methods.balanceOf(
+            tokenOwner,
+        ).call();
+    }
+
+
 }
 
 
@@ -68,3 +80,6 @@ export async function getDecimal(index, state){
     // 2. get decimals
     return await instance.methods.decimals().call();
 }
+
+
+

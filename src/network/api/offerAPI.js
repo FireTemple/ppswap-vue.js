@@ -13,7 +13,6 @@ import {apiBaseUrl} from "@/utils/constants/network";
  * @returns {Promise | Promise<unknown>}
  */
 export function updateStatus(id,status){
-    console.log("bbbb")
     return  requestPromise({
         url: apiBaseUrl + '/offer',
         method: 'put',
