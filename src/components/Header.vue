@@ -426,14 +426,14 @@ export default {
       let amount = this.ppswBuyAmount;
       // check amount
       if (amount < 0 || amount > 0.5) {
-        this.$message.error("The number should in the range of 0 - 0.5")
+        this.$message.error("Sorry, each wallet can purchase at most 0.5 worth of PPS")
         return;
       }
 
       // check if user already have too many PPS
       let buyingAmount = this.ppswBuyAmount * this.ppswapBuyRate;
       if(!await this.checkValidForBuy(buyingAmount)){
-        this.$message.error("Currently user only allow to hold less then 1B PPS, please check your PPS amount")
+        this.$message.error("Sorry, each wallet can purchase at most 1B PPS")
         return;
       }
 
